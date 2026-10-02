@@ -6,164 +6,217 @@
 <title>Waitlink</title>
 <style>
   * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-  body {
-    margin: 0;
-    font-family: Arial, Helvetica, sans-serif;
-    color: #e8fff4;
-    background: #0b0f0d url("bg.jpg") center / cover fixed no-repeat;
-  }
-  a, button { font: inherit; }
-  button, .try, .plan { cursor: pointer; }
-  .top {
-    min-height: 64px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 10px 18px;
-    background: rgba(8, 14, 12, 0.92);
-    border-bottom: 1px solid #163028;
-    position: sticky;
-    top: 0;
-    z-index: 2;
-  }
-  nav { display: flex; gap: 16px; flex-wrap: wrap; }
-  nav a { color: #9dccb6; text-decoration: none; padding: 8px 0; }
-  .brand { font-weight: 700; font-size: 22px; }
-  .banner {
-    background: #00aa91;
-    color: #04120e;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 14px 18px;
-    flex-wrap: wrap;
-  }
-  .banner p { margin: 0; font-size: 18px; }
-  .try, .plan, .send {
-    background: #04120e;
-    color: #7dffa8;
-    border: 0;
-    border-radius: 8px;
-    padding: 12px 16px;
-    font-weight: 700;
-  }
-  .plan { width: 100%; text-align: left; background: #10241c; color: #e8fff4; border: 1px solid #1d4a38; }
-  .plan.on { border-color: #7dffa8; }
-  .wrap { max-width: 1100px; margin: 0 auto; padding: 28px 18px 64px; }
-  h1 { font-size: 40px; line-height: 1.15; margin: 8px 0 18px; }
-  h2 { margin: 36px 0 12px; scroll-margin-top: 84px; }
-  .ideas, .steps, .prices { display: grid; gap: 12px; grid-template-columns: 1fr; }
-  .ideas div, .steps div, .card { background: rgba(16, 36, 28, 0.94); border: 1px solid #1d4a38; border-radius: 14px; padding: 14px; }
-  .ideas b, .steps b { display: block; margin-bottom: 4px; }
-  .ideas p, .steps p, .note, label { margin: 0; color: #9dccb6; }
-  .split { display: grid; gap: 18px; }
-  .hero { width: 100%; border-radius: 4px; display: block; }
-  .card h2 { margin: 0 0 8px; font-size: 28px; }
-  .pill { display: inline-block; background: #00aa91; color: #04120e; border-radius: 999px; padding: 8px 12px; font-size: 13px; font-weight: 700; margin: 8px 0 14px; }
-  .prices strong { display: block; font-size: 22px; margin: 4px 0; }
+  body { margin: 0; font-family: Arial, Helvetica, sans-serif; color: #e8fff4; background: #0b0f0d url("bg.jpg") center / cover fixed no-repeat; }
+  button, input, select { font: inherit; }
+  button { cursor: pointer; }
+  .top { min-height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 16px; background: rgba(8,14,12,.94); border-bottom: 1px solid #163028; position: sticky; top: 0; z-index: 2; }
+  .brand { font-weight: 700; font-size: 22px; background: none; border: 0; color: inherit; padding: 0; }
+  nav { display: flex; gap: 8px; flex-wrap: wrap; }
+  nav button { background: transparent; color: #9dccb6; border: 0; padding: 8px 10px; border-radius: 8px; }
+  nav button.on { background: #00aa91; color: #04120e; font-weight: 700; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 22px 16px 72px; }
+  h1 { font-size: 34px; line-height: 1.15; margin: 8px 0 8px; }
+  h2 { margin: 0 0 8px; }
+  .lede, .note, label { color: #9dccb6; }
+  .panel { display: none; }
+  .panel.on { display: block; }
+  .box, .card { background: rgba(16,36,28,.94); border: 1px solid #1d4a38; border-radius: 14px; padding: 16px; }
   form { display: grid; gap: 10px; margin-top: 14px; }
-  input, select {
-    width: 100%;
-    border-radius: 8px;
-    border: 1px solid #1d4a38;
-    background: #0b0f0d;
-    color: #e8fff4;
-    padding: 12px;
-  }
-  .ok { display: none; margin-top: 14px; padding: 14px; border-radius: 14px; background: #10241c; border: 1px solid #7dffa8; }
+  input, select { width: 100%; border-radius: 8px; border: 1px solid #1d4a38; background: #0b0f0d; color: #e8fff4; padding: 12px; }
+  .send, .try { background: #04120e; color: #7dffa8; border: 0; border-radius: 8px; padding: 12px 16px; font-weight: 700; }
+  .samples { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .samples button { background: transparent; color: #7dffa8; border: 1px solid #1d4a38; border-radius: 999px; padding: 8px 12px; }
+  .result { margin-top: 14px; padding: 14px; border-radius: 14px; display: none; }
+  .result b { display: block; font-size: 22px; margin-bottom: 6px; }
+  .bad { background: #2a1214; border: 1px solid #ff8d8d; }
+  .hold { background: #2a2412; border: 1px solid #ffe08a; }
+  .ok { background: #10241c; border: 1px solid #7dffa8; }
+  .grid { display: grid; gap: 12px; }
+  .grid p, .card p { margin: 6px 0 0; color: #9dccb6; }
+  .prices { display: grid; gap: 12px; }
+  .prices button { text-align: left; background: #10241c; color: #e8fff4; border: 1px solid #1d4a38; border-radius: 14px; padding: 14px; }
+  .prices strong { display: block; font-size: 22px; margin: 4px 0; }
+  .prices .on { border-color: #7dffa8; }
+  .hero { width: 100%; border-radius: 8px; display: block; margin: 14px 0; }
   @media (min-width: 800px) {
-    .ideas, .steps, .prices { grid-template-columns: 1fr 1fr 1fr; }
-    .split { grid-template-columns: 1.35fr 0.75fr; align-items: start; }
+    .grid, .prices { grid-template-columns: 1fr 1fr 1fr; }
+    .split { display: grid; grid-template-columns: 1.2fr .8fr; gap: 16px; align-items: start; }
   }
 </style>
 </head>
 <body>
   <div class="top">
-    <div class="brand">Waitlink</div>
+    <button class="brand" type="button" data-tab="scan">Waitlink</button>
     <nav>
-      <a href="#how">How it works</a>
-      <a href="#price">Pricing</a>
-      <a href="#start">Start</a>
+      <button type="button" data-tab="scan" class="on">Scan</button>
+      <button type="button" data-tab="how">How it works</button>
+      <button type="button" data-tab="price">Pricing</button>
+      <button type="button" data-tab="start">Start</button>
     </nav>
   </div>
-  <div class="banner">
-    <p>Hold scam calls, text links, and Gmail or Yahoo mail before you tap.</p>
-    <button class="try" type="button" data-plan="trial">Try it for free</button>
-  </div>
   <div class="wrap">
-    <h1>See the link before you tap it.</h1>
-    <div class="ideas">
-      <div><b>Family ping</b><p>A bank or IRS fake texts someone you trust.</p></div>
-      <div><b>Link age</b><p>Shows if the domain was registered this week.</p></div>
-      <div><b>Share check</b><p>Forward a text and get open or don't.</p></div>
-    </div>
-    <div class="split">
-      <img class="hero" src="hero.jpg" alt="Laptop showing a don't-open warning" />
-      <aside class="card">
-        <h2>One list for calls, texts, and mail.</h2>
-        <p class="note">Each item says open or don't, in one line.</p>
-        <div class="pill">iPhone, Gmail, and Yahoo</div>
-        <button class="try" type="button" data-plan="trial">Start the 3-day trial</button>
-      </aside>
-    </div>
-    <h2 id="how">How it works</h2>
-    <div class="steps">
-      <div><b>1. Connect</b><p>Add Gmail and Yahoo. On iPhone, turn on the message filter and caller ID.</p></div>
-      <div><b>2. Hold</b><p>Calls, texts, and mail links wait in one list instead of opening right away.</p></div>
-      <div><b>3. Decide</b><p>You get a reason, then you open it or leave it.</p></div>
-    </div>
-    <h2 id="price">Pricing</h2>
-    <div class="prices">
-      <button class="plan" type="button" data-plan="trial"><span>Trial</span><strong>3 days free</strong><p class="note">No charge until day 4.</p></button>
-      <button class="plan" type="button" data-plan="monthly"><span>Monthly</span><strong>$3.99</strong><p class="note">One iPhone, Gmail, and Yahoo.</p></button>
-      <button class="plan" type="button" data-plan="yearly"><span>Yearly</span><strong>$29</strong><p class="note">About $2.42 a month.</p></button>
-    </div>
-    <h2 id="start">Start</h2>
-    <p class="note">This saves your email on this phone only. It does not charge you, and it does not connect Gmail or Yahoo yet. The iPhone app comes later.</p>
-    <form id="join">
-      <label for="email">Email</label>
-      <input id="email" name="email" type="email" required placeholder="you@email.com" autocomplete="email" />
-      <label for="plan">Plan</label>
-      <select id="plan" name="plan">
-        <option value="trial">3 days free</option>
-        <option value="monthly">$3.99 a month</option>
-        <option value="yearly">$29 a year</option>
-      </select>
-      <button class="send" type="submit">Save my spot</button>
-    </form>
-    <p class="ok" id="ok"></p>
+    <section class="panel on" id="scan">
+      <h1>Check a number or email before you answer.</h1>
+      <p class="lede">Paste what you received. This page checks the text you give it. It cannot see your calls, texts, or inbox.</p>
+      <div class="box">
+        <form id="scan-form">
+          <label for="query">Phone number or email</label>
+          <input id="query" required placeholder="555-0100 or name@bank-alert.com" autocomplete="off" />
+          <button class="send" type="submit">Check it</button>
+        </form>
+        <div class="samples">
+          <button type="button" data-sample="irs-refund@gmail.com">irs-refund@gmail.com</button>
+          <button type="button" data-sample="support@paypa1.com">support@paypa1.com</button>
+          <button type="button" data-sample="(900) 555-0199">(900) 555-0199</button>
+          <button type="button" data-sample="hello@github.com">hello@github.com</button>
+        </div>
+        <div class="result" id="result"></div>
+      </div>
+    </section>
+
+    <section class="panel" id="how">
+      <h1>How it works</h1>
+      <div class="split">
+        <img class="hero" src="hero.jpg" alt="Laptop showing a don't-open warning" />
+        <div class="card">
+          <h2>One list. Open or don't.</h2>
+          <p>Each item gets a reason, not a score. This website only checks what you paste.</p>
+        </div>
+      </div>
+      <div class="grid" style="margin-top:12px">
+        <div class="card"><h2>1. Paste</h2><p>Put in the number or the email address from the message.</p></div>
+        <div class="card"><h2>2. Check</h2><p>Lookalike names, premium phone prefixes, and how old the email's domain is.</p></div>
+        <div class="card"><h2>3. Decide</h2><p>Don't open, hold, or no public warning. You still choose.</p></div>
+      </div>
+      <div class="grid" style="margin-top:12px">
+        <div class="card"><h2>Family ping</h2><p>A bank or IRS fake asks someone you trust to call back. Planned for the app, not on this site yet.</p></div>
+        <div class="card"><h2>Link age</h2><p>The scan shows if an email domain was registered in the last 30 days.</p></div>
+        <div class="card"><h2>Share check</h2><p>Paste a forwarded address here. The app will take a shared text later.</p></div>
+      </div>
+    </section>
+
+    <section class="panel" id="price">
+      <h1>Pricing</h1>
+      <p class="lede">The scan on this site is free. These prices are for the iPhone app, which is not in the App Store yet.</p>
+      <div class="prices">
+        <button type="button" data-plan="trial"><span>Trial</span><strong>3 days free</strong><p class="note">No charge until day 4.</p></button>
+        <button type="button" data-plan="monthly"><span>Monthly</span><strong>$3.99</strong><p class="note">One iPhone, Gmail, and Yahoo.</p></button>
+        <button type="button" data-plan="yearly"><span>Yearly</span><strong>$29</strong><p class="note">About $2.42 a month.</p></button>
+      </div>
+    </section>
+
+    <section class="panel" id="start">
+      <h1>Start</h1>
+      <p class="lede">Save an email on this phone if you want a note when the app exists. This does not charge you and does not connect Gmail or Yahoo.</p>
+      <form class="box" id="join">
+        <label for="email">Email</label>
+        <input id="email" type="email" required placeholder="you@email.com" autocomplete="email" />
+        <label for="plan">Plan</label>
+        <select id="plan">
+          <option value="trial">3 days free</option>
+          <option value="monthly">$3.99 a month</option>
+          <option value="yearly">$29 a year</option>
+        </select>
+        <button class="send" type="submit">Save my spot</button>
+        <p class="note" id="saved"></p>
+      </form>
+    </section>
   </div>
-  <script>
-    var form = document.getElementById("join");
-    var plan = document.getElementById("plan");
-    var ok = document.getElementById("ok");
-    function pick(value) {
-      plan.value = value;
-      document.querySelectorAll(".plan").forEach(function (el) {
-        el.classList.toggle("on", el.getAttribute("data-plan") === value);
-      });
-      document.getElementById("start").scrollIntoView({ behavior: "smooth" });
-      document.getElementById("email").focus();
-    }
-    document.querySelectorAll("[data-plan]").forEach(function (el) {
-      el.addEventListener("click", function () { pick(el.getAttribute("data-plan")); });
-    });
-    form.addEventListener("submit", function (event) {
-      event.preventDefault();
-      var email = document.getElementById("email").value.trim();
-      var chosen = plan.options[plan.selectedIndex].text;
-      var list = [];
-      try { list = JSON.parse(localStorage.getItem("waitlink") || "[]"); } catch (e) { list = []; }
-      list.push({ email: email, plan: plan.value, at: new Date().toISOString() });
-      localStorage.setItem("waitlink", JSON.stringify(list));
-      ok.style.display = "block";
-      ok.textContent = "Saved " + email + " for " + chosen + ". This stays on this phone. Nothing was charged.";
-      form.reset();
-      plan.value = "trial";
-    });
-  </script>
+<script>
+var tabs = document.querySelectorAll("[data-tab]");
+function show(id) {
+  document.querySelectorAll(".panel").forEach(function (p) { p.classList.toggle("on", p.id === id); });
+  document.querySelectorAll("nav [data-tab]").forEach(function (b) { b.classList.toggle("on", b.getAttribute("data-tab") === id); });
+  if (location.hash !== "#" + id) history.replaceState(null, "", "#" + id);
+}
+tabs.forEach(function (b) { b.addEventListener("click", function () { show(b.getAttribute("data-tab")); }); });
+if (location.hash) show(location.hash.slice(1));
+
+var lookalikes = ["paypa1", "paypai", "g00gle", "micros0ft", "arnazon", "app1e", "we11sfargo", "bank0famerica"];
+var brands = ["irs", "paypal", "apple", "amazon", "bank", "wells", "microsoft", "google", "netflix", "socialsecurity"];
+var result = document.getElementById("result");
+
+function showResult(kind, title, text) {
+  result.className = "result " + kind;
+  result.style.display = "block";
+  result.innerHTML = "<b>" + title + "</b><span>" + text + "</span>";
+}
+
+function digits(s) { return (s.match(/\d/g) || []).join(""); }
+
+function checkPhone(raw) {
+  var n = digits(raw);
+  if (n.length === 11 && n[0] === "1") n = n.slice(1);
+  if (n.length !== 10) return showResult("hold", "Hold", "That doesn't look like a 10-digit US number, so don't call it back from the message alone.");
+  if (/^(\d)\1{9}$/.test(n) || n === "1234567890") return showResult("bad", "Don't open", "The digits are fake-looking. Real carriers don't hand out a number like that.");
+  var prefix = n.slice(0, 3);
+  if (prefix === "900" || prefix === "976") return showResult("bad", "Don't open", prefix + " numbers are premium-rate. A scammer uses them so you pay to call back.");
+  return showResult("ok", "No public warning", "This checker has no live list of scam phone numbers, so a normal-looking number is not proof it's safe. Don't share a code or a payment.");
+}
+
+function brandOnFree(local, domain) {
+  var free = ["gmail.com", "yahoo.com", "outlook.com", "hotmail.com", "aol.com", "icloud.com"];
+  if (free.indexOf(domain) === -1) return false;
+  return brands.some(function (b) { return local.indexOf(b) !== -1; });
+}
+
+async function checkEmail(raw) {
+  var m = raw.trim().toLowerCase().match(/([a-z0-9._+-]+)@([a-z0-9.-]+\.[a-z]{2,})/);
+  if (!m) return showResult("hold", "Hold", "That doesn't look like an email address.");
+  var local = m[1], domain = m[2];
+  if (lookalikes.some(function (x) { return domain.indexOf(x) !== -1; })) {
+    return showResult("bad", "Don't open", domain + " is a lookalike of a real company name. Don't tap links in it.");
+  }
+  if (brandOnFree(local, domain)) {
+    return showResult("bad", "Don't open", "It claims to be a bank, the IRS, or another company, but it was sent from " + domain + ". Those offices don't use a free mailbox.");
+  }
+  showResult("hold", "Checking the domain…", "Looking up when " + domain + " was registered.");
+  try {
+    var res = await fetch("https://rdap.org/domain/" + encodeURIComponent(domain));
+    if (!res.ok) throw new Error("miss");
+    var data = await res.json();
+    var events = data.events || [];
+    var reg = events.find(function (e) { return e.eventAction === "registration"; });
+    if (!reg) throw new Error("nodate");
+    var days = Math.round((Date.now() - new Date(reg.eventDate).getTime()) / 86400000);
+    if (days >= 0 && days < 30) return showResult("bad", "Don't open", domain + " was registered " + days + " days ago. New domains are a common scam setup.");
+    return showResult("ok", "No public warning", domain + " was registered about " + days + " days ago. Age alone doesn't make the message safe. Don't share a code.");
+  } catch (e) {
+    return showResult("hold", "Hold", "No public registration date came back for " + domain + ". Don't open links until you check the sender yourself.");
+  }
+}
+
+document.getElementById("scan-form").addEventListener("submit", function (e) {
+  e.preventDefault();
+  var q = document.getElementById("query").value.trim();
+  if (q.indexOf("@") !== -1) checkEmail(q);
+  else checkPhone(q);
+});
+document.querySelectorAll("[data-sample]").forEach(function (b) {
+  b.addEventListener("click", function () {
+    document.getElementById("query").value = b.getAttribute("data-sample");
+    document.getElementById("scan-form").requestSubmit();
+  });
+});
+
+document.querySelectorAll("[data-plan]").forEach(function (b) {
+  b.addEventListener("click", function () {
+    document.getElementById("plan").value = b.getAttribute("data-plan");
+    document.querySelectorAll("[data-plan]").forEach(function (el) { el.classList.toggle("on", el === b); });
+    show("start");
+  });
+});
+document.getElementById("join").addEventListener("submit", function (e) {
+  e.preventDefault();
+  var email = document.getElementById("email").value.trim();
+  var chosen = document.getElementById("plan").selectedOptions[0].text;
+  var list = [];
+  try { list = JSON.parse(localStorage.getItem("waitlink") || "[]"); } catch (err) { list = []; }
+  list.push({ email: email, plan: document.getElementById("plan").value, at: new Date().toISOString() });
+  localStorage.setItem("waitlink", JSON.stringify(list));
+  document.getElementById("saved").textContent = "Saved " + email + " for " + chosen + " on this phone. Nothing was charged.";
+  e.target.reset();
+});
+</script>
 </body>
 </html>
