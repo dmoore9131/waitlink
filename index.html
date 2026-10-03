@@ -51,13 +51,14 @@
       <button type="button" data-tab="scan" class="on">Scan</button>
       <button type="button" data-tab="how">How it works</button>
       <button type="button" data-tab="price">Pricing</button>
+      <button type="button" data-tab="blocked">Blocked</button>
       <button type="button" data-tab="start">Start</button>
     </nav>
   </div>
   <div class="wrap">
     <section class="panel on" id="scan">
       <h1>Check a number or email before you answer.</h1>
-      <p class="lede">Paste what you received. This page checks the text you give it. It cannot see your calls, texts, or inbox.</p>
+      <p class="lede">Pasting a number does not hang up the call. A "Don't open" result is the stop: don't reply, don't tap, block it on your phone, and save it here so the next paste is instant.</p>
       <div class="box">
         <form id="scan-form">
           <label for="query">Phone number or email</label>
@@ -84,15 +85,22 @@
         </div>
       </div>
       <div class="grid" style="margin-top:12px">
-        <div class="card"><h2>1. Paste</h2><p>Put in the number or the email address from the message.</p></div>
-        <div class="card"><h2>2. Check</h2><p>Lookalike names, premium phone prefixes, and how old the email's domain is.</p></div>
-        <div class="card"><h2>3. Decide</h2><p>Don't open, hold, or no public warning. You still choose.</p></div>
+        <div class="card"><h2>1. Paste</h2><p>Put in the number or the email from the message. This site never sees your inbox.</p></div>
+        <div class="card"><h2>2. Check</h2><p>Lookalike names, premium phone prefixes, a domain registered in the last 30 days, and your own block list.</p></div>
+        <div class="card"><h2>3. Stop the damage</h2><p>Don't reply, don't tap, and don't call back. Then block the number in the Phone app, or report the email as spam in Gmail or Yahoo.</p></div>
       </div>
       <div class="grid" style="margin-top:12px">
         <div class="card"><h2>Family ping</h2><p>A bank or IRS fake asks someone you trust to call back. Planned for the app, not on this site yet.</p></div>
         <div class="card"><h2>Link age</h2><p>The scan shows if an email domain was registered in the last 30 days.</p></div>
         <div class="card"><h2>Share check</h2><p>Paste a forwarded address here. The app will take a shared text later.</p></div>
       </div>
+    </section>
+
+
+    <section class="panel" id="blocked">
+      <h1>Blocked on this phone</h1>
+      <p class="lede">These are addresses you saved from a Don't open or Hold result. They stay on this phone only. Waitlink still cannot block them inside the Phone app or your inbox. Do that step there too.</p>
+      <div class="box" id="blocked-list"><p class="note">Nothing saved yet.</p></div>
     </section>
 
     <section class="panel" id="price">
@@ -131,15 +139,52 @@ function show(id) {
 }
 tabs.forEach(function (b) { b.addEventListener("click", function () { show(b.getAttribute("data-tab")); }); });
 if (location.hash) show(location.hash.slice(1));
+renderBlocked();
 
 var lookalikes = ["paypa1", "paypai", "g00gle", "micros0ft", "arnazon", "app1e", "we11sfargo", "bank0famerica"];
 var brands = ["irs", "paypal", "apple", "amazon", "bank", "wells", "microsoft", "google", "netflix", "socialsecurity"];
 var result = document.getElementById("result");
 
-function showResult(kind, title, text) {
+function blocks() {
+  try { return JSON.parse(localStorage.getItem("waitlink-blocks") || "[]"); }
+  catch (e) { return []; }
+}
+function keyOf(raw) {
+  var q = raw.trim().toLowerCase();
+  if (q.indexOf("@") !== -1) return q;
+  var n = digits(q);
+  if (n.length === 11 && n[0] === "1") n = n.slice(1);
+  return n;
+}
+function renderBlocked() {
+  var box = document.getElementById("blocked-list");
+  var list = blocks();
+  if (!list.length) { box.innerHTML = "<p class=\"note\">Nothing saved yet.</p>"; return; }
+  box.innerHTML = list.map(function (item) {
+    return "<p><b>" + item.value + "</b><br><span class=\"note\">" + item.why + "</span></p>";
+  }).join("");
+}
+function showResult(kind, title, text, steps, value) {
   result.className = "result " + kind;
   result.style.display = "block";
-  result.innerHTML = "<b>" + title + "</b><span>" + text + "</span>";
+  var extra = "";
+  if (steps && steps.length) {
+    extra = "<ul>" + steps.map(function (s) { return "<li>" + s + "</li>"; }).join("") + "</ul>";
+  }
+  if (value) extra += '<button class="send" type="button" id="block-btn">Save to my block list</button>';
+  result.innerHTML = "<b>" + title + "</b><span>" + text + "</span>" + extra;
+  var btn = document.getElementById("block-btn");
+  if (!btn) return;
+  btn.addEventListener("click", function () {
+    var list = blocks();
+    var k = keyOf(value);
+    if (!list.some(function (item) { return item.key === k; })) {
+      list.push({ key: k, value: value.trim(), why: title + ". " + text, at: new Date().toISOString() });
+      localStorage.setItem("waitlink-blocks", JSON.stringify(list));
+    }
+    renderBlocked();
+    btn.textContent = "Saved. Block it in Phone or report it in mail too.";
+  });
 }
 
 function digits(s) { return (s.match(/\d/g) || []).join(""); }
@@ -147,13 +192,17 @@ function digits(s) { return (s.match(/\d/g) || []).join(""); }
 function checkPhone(raw) {
   var n = digits(raw);
   if (n.length === 11 && n[0] === "1") n = n.slice(1);
-  if (n.length !== 10) return showResult("hold", "Hold", "That doesn't look like a 10-digit US number, so don't call it back from the message alone.");
-  if (/^(\d)\1{9}$/.test(n) || n === "1234567890") return showResult("bad", "Don't open", "The digits are fake-looking. Real carriers don't hand out a number like that.");
+  var phoneSteps = ["Do not call this number back.", "Do not read a code to them.", "On iPhone open Phone, tap the i next to the call, then Block this Caller.", "Save it below so the next paste stops here."];
+  if (n.length !== 10) return showResult("hold", "Hold", "That doesn't look like a 10-digit US number, so don't call it back from the message alone.", phoneSteps, raw);
+  if (/^(\d)\1{9}$/.test(n) || n === "1234567890") return showResult("bad", "Don't open", "The digits are fake-looking. Real carriers don't hand out a number like that.", phoneSteps, raw);
   var prefix = n.slice(0, 3);
-  if (prefix === "900" || prefix === "976") return showResult("bad", "Don't open", prefix + " numbers are premium-rate. A scammer uses them so you pay to call back.");
-  return showResult("ok", "No public warning", "This checker has no live list of scam phone numbers, so a normal-looking number is not proof it's safe. Don't share a code or a payment.");
+  if (prefix === "900" || prefix === "976") return showResult("bad", "Don't open", prefix + " numbers are premium-rate. A scammer uses them so you pay to call back.", phoneSteps, raw);
+  return showResult("ok", "No public warning", "This checker has no live list of scam phone numbers, so a normal-looking number is not proof it's safe. Don't share a code or a payment.", ["If they ask for a code or a payment, hang up and call the company using the number on your card or statement."], raw);
 }
 
+function mailSteps(domain) {
+  return ["Do not reply and do not tap links or attachments.", "In Gmail or Yahoo, open the message and choose Report spam or Report phishing.", "Save it below so the next paste of this address says don't open immediately."];
+}
 function brandOnFree(local, domain) {
   var free = ["gmail.com", "yahoo.com", "outlook.com", "hotmail.com", "aol.com", "icloud.com"];
   if (free.indexOf(domain) === -1) return false;
@@ -165,10 +214,10 @@ async function checkEmail(raw) {
   if (!m) return showResult("hold", "Hold", "That doesn't look like an email address.");
   var local = m[1], domain = m[2];
   if (lookalikes.some(function (x) { return domain.indexOf(x) !== -1; })) {
-    return showResult("bad", "Don't open", domain + " is a lookalike of a real company name. Don't tap links in it.");
+    return showResult("bad", "Don't open", domain + " is a lookalike of a real company name.", mailSteps(domain), raw);
   }
   if (brandOnFree(local, domain)) {
-    return showResult("bad", "Don't open", "It claims to be a bank, the IRS, or another company, but it was sent from " + domain + ". Those offices don't use a free mailbox.");
+    return showResult("bad", "Don't open", "It claims to be a bank, the IRS, or another company, but it was sent from " + domain + ". Those offices don't use a free mailbox.", mailSteps(domain), raw);
   }
   showResult("hold", "Checking the domain…", "Looking up when " + domain + " was registered.");
   try {
@@ -179,8 +228,8 @@ async function checkEmail(raw) {
     var reg = events.find(function (e) { return e.eventAction === "registration"; });
     if (!reg) throw new Error("nodate");
     var days = Math.round((Date.now() - new Date(reg.eventDate).getTime()) / 86400000);
-    if (days >= 0 && days < 30) return showResult("bad", "Don't open", domain + " was registered " + days + " days ago. New domains are a common scam setup.");
-    return showResult("ok", "No public warning", domain + " was registered about " + days + " days ago. Age alone doesn't make the message safe. Don't share a code.");
+    if (days >= 0 && days < 30) return showResult("bad", "Don't open", domain + " was registered " + days + " days ago. New domains are a common scam setup.", mailSteps(domain), raw);
+    return showResult("ok", "No public warning", domain + " was registered about " + days + " days ago. Age alone doesn't make the message safe.", ["Don't share a code or a password.", "Open the company site yourself instead of tapping a link in the mail."]);
   } catch (e) {
     return showResult("hold", "Hold", "No public registration date came back for " + domain + ". Don't open links until you check the sender yourself.");
   }
@@ -189,6 +238,8 @@ async function checkEmail(raw) {
 document.getElementById("scan-form").addEventListener("submit", function (e) {
   e.preventDefault();
   var q = document.getElementById("query").value.trim();
+  var known = blocks().find(function (item) { return item.key === keyOf(q); });
+  if (known) return showResult("bad", "Don't open", "You already saved this. Don't reply, don't call back, and don't tap anything from it.", [], q);
   if (q.indexOf("@") !== -1) checkEmail(q);
   else checkPhone(q);
 });
