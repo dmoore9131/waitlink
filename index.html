@@ -70,6 +70,9 @@
           <button type="button" data-sample="support@paypa1.com">support@paypa1.com</button>
           <button type="button" data-sample="(900) 555-0199">(900) 555-0199</button>
           <button type="button" data-sample="hello@github.com">hello@github.com</button>
+          <button type="button" data-sample="How much could you use today if the right number for you? Brokers have been calling.">Loan text</button>
+          <button type="button" data-sample="phishing40bb5da11@outlook.com">phishing40bb5da11@outlook.com</button>
+          <button type="button" data-sample="Welcome to Paypal. Your order information is attached as membership.docx from eoidb92283@gmail.com">Fake PayPal</button>
         </div>
         <div class="result" id="result"></div>
       </div>
@@ -86,7 +89,7 @@
       </div>
       <div class="grid" style="margin-top:12px">
         <div class="card"><h2>1. Paste</h2><p>Put in the number or the email from the message. This site never sees your inbox.</p></div>
-        <div class="card"><h2>2. Check</h2><p>Lookalike names, premium phone prefixes, a domain registered in the last 30 days, and your own block list.</p></div>
+        <div class="card"><h2>2. Check</h2><p>Lookalike names, premium phone prefixes, a domain registered in the last 30 days, a loan pitch, a recruiter blast, a mailbox named phishing, a company notice sent from Gmail, and your own block list.</p></div>
         <div class="card"><h2>3. Stop the damage</h2><p>Don't reply, don't tap, and don't call back. Then block the number in the Phone app, or report the email as spam in Gmail or Yahoo.</p></div>
       </div>
       <div class="grid" style="margin-top:12px">
@@ -97,6 +100,13 @@
       <div class="card" style="margin-top:12px">
         <h2>What adding a number actually stops</h2>
         <p>Apps like Nomorobo and Robokiller stop a caller in three steps. First they check your own block list. Then they check a shared list of bad numbers, which this website does not have. Then the phone refuses the call before it rings. This site can only do the first step, plus a pattern check: lookalike names, a domain registered in the last 30 days, and premium 900 or 976 numbers.</p>
+
+      <div class="card" style="margin-top:12px">
+        <h2>Spam on a list is not a hacked account</h2>
+        <p>Loan texts and recruiter mail mean your number or email is on a list. They do not mean someone is signed into the phone or Gmail. A fake PayPal note from a random Gmail, with a Word file attached, is a trick. Delete it. Do not open the file.</p>
+        <p>A real break-in looks different. Mail in Sent that you did not write. A password-reset email you did not request. A new device on the Google account. A forwarding rule you did not add.</p>
+        <p>Check it in this order. Open <a href="https://myaccount.google.com/security">Google Security Checkup</a> and look at devices, recent security activity, and the recovery phone and email. In Gmail, open Settings, See all settings, then Forwarding and Filters, and remove anything you did not create. On iPhone turn on Settings, Messages, Filter Unknown Senders, and Settings, Phone, Silence Unknown Callers. Report junk. Do not reply. This site still cannot read your inbox or hang up a call.</p>
+      </div>
         <p>Saving an address here does not delete the email or hang up the call. It stops the next mistake. The next time you paste it, the page says don't open before you reply. You still block the number in the Phone app, and you still report the message in Gmail or Yahoo, because only those apps can refuse the next one. People on Reddit keep finding the same limit: scammers spoof a new number after you block one, so blocking a single number is not enough. Silence Unknown Callers on iPhone, and don't answer a number you don't know. Answering is what tells them the line is live.</p>
       </div>
     </section>
@@ -192,6 +202,27 @@ function showResult(kind, title, text, steps, value) {
   });
 }
 
+
+function scanText(raw) {
+  var q = raw.toLowerCase();
+  if (/brokers have been calling|how much could you use|right number for you|funds available today|pre-?approved/.test(q)) {
+    showResult("bad", "Don't open", "This is a cold loan pitch. A reply, even STOP, tells them the number is live.", ["Do not reply.", "Do not text STOP unless you signed up for this.", "On iPhone tap Report Junk.", "Block the number in the Phone app."], raw);
+    return true;
+  }
+  if (/reply stop/.test(q) || /job portal/.test(q) || /left a? ?vm/.test(q) || (/100% remote/.test(q) && /reply stop|voicemail|left a? ?vm/.test(q))) {
+    showResult("hold", "Hold", "This reads like an unsolicited recruiter text. Your number is on a list. That is not proof the phone is hacked.", ["Do not call back.", "Do not tap a link that plays a voicemail.", "Report junk."], raw);
+    return true;
+  }
+  var brandHit = brands.some(function (b) { return q.indexOf(b) !== -1; });
+  var freeFrom = /@(gmail|yahoo|ymail|outlook|hotmail|aol)\.com/.test(q);
+  var wordFile = /\.docx?\b/.test(q) || /order information|membership id|welcome to paypal/.test(q);
+  if (brandHit && (freeFrom || wordFile)) {
+    showResult("bad", "Don't open", "A real PayPal, bank, IRS, Apple, or Microsoft notice does not come from a random free mailbox, and it does not ask you to open a Word file.", ["Do not open the attachment.", "Do not reply.", "Delete the message.", "If you already opened the file, change that email password and sign out other sessions."], raw);
+    return true;
+  }
+  return false;
+}
+
 function digits(s) { return (s.match(/\d/g) || []).join(""); }
 
 function checkPhone(raw) {
@@ -209,7 +240,7 @@ function mailSteps(domain) {
   return ["Do not reply and do not tap links or attachments.", "In Gmail or Yahoo, open the message and choose Report spam or Report phishing.", "Save it below so the next paste of this address says don't open immediately."];
 }
 function brandOnFree(local, domain) {
-  var free = ["gmail.com", "yahoo.com", "outlook.com", "hotmail.com", "aol.com", "icloud.com"];
+  var free = ["gmail.com", "yahoo.com", "ymail.com", "outlook.com", "hotmail.com", "aol.com", "icloud.com"];
   if (free.indexOf(domain) === -1) return false;
   return brands.some(function (b) { return local.indexOf(b) !== -1; });
 }
@@ -218,6 +249,9 @@ async function checkEmail(raw) {
   var m = raw.trim().toLowerCase().match(/([a-z0-9._+-]+)@([a-z0-9.-]+\.[a-z]{2,})/);
   if (!m) return showResult("hold", "Hold", "That doesn't look like an email address.");
   var local = m[1], domain = m[2];
+  if (/phishing|phish|invoice-alert|account-verify|secure-update/.test(local)) {
+    return showResult("bad", "Don't open", "The address itself is named like a phishing mailbox. Don't reply and don't open anything from it.", mailSteps(domain), raw);
+  }
   if (lookalikes.some(function (x) { return domain.indexOf(x) !== -1; })) {
     return showResult("bad", "Don't open", domain + " is a lookalike of a real company name.", mailSteps(domain), raw);
   }
@@ -245,6 +279,7 @@ document.getElementById("scan-form").addEventListener("submit", function (e) {
   var q = document.getElementById("query").value.trim();
   var known = blocks().find(function (item) { return item.key === keyOf(q); });
   if (known) return showResult("bad", "Don't open", "You already saved this. Don't reply, don't call back, and don't tap anything from it.", [], q);
+  if (scanText(q)) return;
   if (q.indexOf("@") !== -1) checkEmail(q);
   else checkPhone(q);
 });
